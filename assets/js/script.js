@@ -90,6 +90,21 @@ $(".card .list-group").sortable({
   }
 });
 
+//Trash
+$("#trash").droppable({
+  accept: ".card .list-group-item",
+  tolerance: "touch",
+  drop: function(event, ui) {
+    ui.draggable.remove();
+  },
+  over: function(event, ui) {
+    console.log("over");
+  },
+  out: function(event, ui) {
+    console.log("out");
+  }
+});
+
 // list item was triggered
 $(".list-group").on("click", "p", function() {
   var text = $(this)
