@@ -44,6 +44,8 @@ var saveTasks = function() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 };
 
+
+// list item was triggered
 $(".list-group").on("click", "p", function() {
   var text = $(this)
   .text()
@@ -56,7 +58,7 @@ $(".list-group").on("click", "p", function() {
   $(this).replaceWith(textInput);
   textInput.trigger("focus");
 });
-
+//list item was blurred
 $(".list-group").on("blur", "textarea", function() {
 //current text value
 var text = $(this)
@@ -86,6 +88,56 @@ var taskP = $("<p>")
 $(this).replaceWith(taskP);
 });
 
+//due date was triggered
+$(".list-group").on("click", "span", function() {
+  //get text
+  var date = $(this)
+  .text()
+  .trim();
+
+  //create input
+  var dateInput = $("<input>")
+  .attr("type", "text")
+  .addClass("form-control")
+  .val(date);
+
+  //swap elements
+  $(this).replaceWith(dateInput);
+
+  //automatically focus
+  dateInput.trigger("focus");
+});
+
+//due date was blurred
+$(".list-group").on("blur", "input[type='text']", function() {
+  //get text
+  var date = $(this)
+  .val()
+  .trim();
+
+  //get parents id
+  var status = $(this)
+  .closest(".list-group")
+  .attr("id")
+  .replace("list-", "");
+
+  //get position
+  var index = $(this)
+  .closest(".list-group-item")
+  .index();
+
+  //update tasks in array and resave
+  tasks[status][index].date = date;
+  saveTasks();
+
+  //recreate span
+  var taskSpan = $("<span>")
+  .addClass("badge badge-primary badge-pill")
+  .text(date);
+
+  //replace input
+  $(this).replaceWith(taskSpan);
+});
 
 // modal was triggered
 $("#task-form-modal").on("show.bs.modal", function() {
