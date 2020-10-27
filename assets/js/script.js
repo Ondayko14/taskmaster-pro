@@ -3,15 +3,20 @@ var tasks = {};
 var createTask = function(taskText, taskDate, taskList) {
   // create elements that make up a task item
   var taskLi = $("<li>").addClass("list-group-item");
+
   var taskSpan = $("<span>")
     .addClass("badge badge-primary badge-pill")
     .text(taskDate);
+
   var taskP = $("<p>")
     .addClass("m-1")
     .text(taskText);
 
   // append span and p element to parent li
   taskLi.append(taskSpan, taskP);
+
+  //check due date
+  auditTask(taskLi);
 
 
   // append to ul list on the page
@@ -43,6 +48,34 @@ var loadTasks = function() {
 var saveTasks = function() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 };
+
+var auditTask = function(taskEl) {
+  //get date from task
+  var date = $(taskEl)
+  .find("span")
+  .text()
+  .trim();
+
+  //convert to moment
+  var time = moment(date, "L").set("hour", 17);
+
+  //remove any old classes
+  $(taskEl).removeClass("list-group-item-warning list-group-item-danger");
+
+  //apply new class if task is near/over due
+  if(moment().isAfter(time)) {
+    $(taskEl).addClass("list-group-item-danger");
+  }
+  else if (Math.abs(moment().diff(time, "days")) <= 2) {
+    $(taskEl).addClass("list-group-item-warning");
+  }
+};
+
+//datepicker
+$("#modalDueDate").datepicker({
+  minDate: 1
+});
+
 //sortable
 $(".card .list-group").sortable({
   connectWith: $(".card .list-group"),
@@ -164,12 +197,19 @@ $(".list-group").on("click", "span", function() {
   //swap elements
   $(this).replaceWith(dateInput);
 
+  //enable UI datepicker
+  dateInput.datepicker({
+    minDate: 1,
+    onClose: function() {
+      $(this).trigger("change");
+    }
+  });
+
   //automatically focus
   dateInput.trigger("focus");
 });
-
-//due date was blurred
-$(".list-group").on("blur", "input[type='text']", function() {
+//due date was changed
+$(".list-group").on("change", "input[type='text']", function() {
   //get text
   var date = $(this)
   .val()
@@ -197,6 +237,9 @@ $(".list-group").on("blur", "input[type='text']", function() {
 
   //replace input
   $(this).replaceWith(taskSpan);
+
+  //pass <li> thru audit to check date
+  auditTask($(taskSpan).closest(".list-group-item"));
 });
 
 // modal was triggered
